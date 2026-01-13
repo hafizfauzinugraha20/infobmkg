@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #map { width: 100%; height: 100vh; }
+        /* Style untuk label jarak di tengah garis */
+        .dist-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #3b82f6;
+            border-radius: 4px;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 2px 5px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var map = L.map('map', {zoomControl: false}).setView([-2.5489, 118.0149], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© OSM'
+    }).addTo(map);
+
+    var quakeMarker = null;
+    var userMarker = null;
+    var connectionLine = null;
+    var distPopup = null;
+
+    // 1. Fungsi Update Lokasi User (Dipanggil dari Java saat awal buka)
+    function setUserLocation(lat, lng) {
+        var latLng = [lat, lng];
+
+        // Icon User (Biru)
+        var userIcon = L.divIcon({
+            className: 'user-icon',
+            html: `<div style="background-color: #3b82f6; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        if (userMarker) {
+            userMarker.setLatLng(latLng);
+        } else {
+            userMarker = L.marker(latLng, {icon: userIcon}).addTo(map).bindPopup("Lokasi Anda");
+            map.flyTo(latLng, 8); // Terbang ke user saat pertama kali dapat lokasi
+        }
+    }
+
+    // 2. Fungsi Fokus Gempa & Gambar Garis (Dipanggil saat list diklik)
+    function focusGempa(userLat, userLng, quakeLat, quakeLng, wilayah, mag) {
+        // A. Gambar Marker Gempa
+        if (quakeMarker) map.removeLayer(quakeMarker);
+
+        var color = parseFloat(mag) >= 5.0 ? '#ef4444' : '#fb923c';
+        var quakeIcon = L.divIcon({
+            html: `<div style="background-color: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+            iconSize: [14, 14], iconAnchor: [7, 7]
+        });
+
+        var quakeLatLng = [quakeLat, quakeLng];
+        quakeMarker = L.marker(quakeLatLng, {icon: quakeIcon}).addTo(map)
+            .bindPopup(`<b>M ${mag}</b><br>${wilayah}`).openPopup();
+
+        // B. Gambar Garis Penghubung (Meteran)
+        if (connectionLine) map.removeLayer(connectionLine);
+        if (distPopup) map.removeLayer(distPopup);
+
+        if (userLat != 0 && userLng != 0) {
+            var userLatLng = [userLat, userLng];
+            var latlngs = [userLatLng, quakeLatLng];
+
+            // Buat garis putus-putus
+            connectionLine = L.polyline(latlngs, {
+                color: '#3b82f6',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            // Hitung Jarak (Leaflet built-in function)
+            var meters = map.distance(userLatLng, quakeLatLng);
+            var km = (meters / 1000).toFixed(1);
+
+            // Taruh Label Jarak di Tengah Garis
+            var centerLat = (userLat + quakeLat) / 2;
+            var centerLng = (userLng + quakeLng) / 2;
+
+            distPopup = L.popup({
+                closeButton: false,
+                autoClose: false,
+                className: 'dist-popup'
+            })
+            .setLatLng([centerLat, centerLng])
+            .setContent(`<div class="dist-label">${km} km</div>`)
+            .openOn(map);
+
+            // Zoom agar User dan Gempa masuk dalam layar
+            map.fitBounds(connectionLine.getBounds(), {padding: [50, 50]});
+        } else {
+            // Jika lokasi user belum ada, cuma terbang ke gempa
+            map.flyTo(quakeLatLng, 10);
+        }
+    }
+</script>
+</body>
+</html>

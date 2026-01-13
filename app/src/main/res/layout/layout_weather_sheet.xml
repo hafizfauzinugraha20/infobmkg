@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cuaca Lokasi Anda"
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:textColor="#757575"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <!-- Ikon Cuaca -->
+        <ImageView
+            android:id="@+id/imgCuaca"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@android:drawable/ic_menu_day"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Suhu -->
+        <TextView
+            android:id="@+id/tvSuhu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--°C"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="#212121"/>
+
+        <!-- Deskripsi Cuaca -->
+        <TextView
+            android:id="@+id/tvDeskripsiCuaca"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Memuat..."
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#F59E0B"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="#F3F4F6"
+        android:padding="12dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/ic_menu_rotate"/>
+
+        <TextView
+            android:id="@+id/tvAngin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Kecepatan Angin: -- km/h"
+            android:textColor="#616161"/>
+    </LinearLayout>
+
+</LinearLayout>
